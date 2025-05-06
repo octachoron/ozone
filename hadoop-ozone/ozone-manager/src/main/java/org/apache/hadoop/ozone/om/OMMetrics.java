@@ -18,8 +18,10 @@
 package org.apache.hadoop.ozone.om;
 
 import com.google.common.annotations.VisibleForTesting;
+import org.apache.hadoop.hdds.annotation.ExtendedMetricTag;
 import org.apache.hadoop.hdds.annotation.InterfaceAudience;
 import org.apache.hadoop.hdds.utils.DBCheckpointMetrics;
+import org.apache.hadoop.hdds.utils.MetricPriority;
 import org.apache.hadoop.metrics2.MetricsSystem;
 import org.apache.hadoop.metrics2.annotation.Metric;
 import org.apache.hadoop.metrics2.annotation.Metrics;
@@ -43,9 +45,18 @@ public class OMMetrics implements OmMetadataReaderMetrics {
   private @Metric MutableCounterLong numFSOps;
 
   // OM op metrics
-  private @Metric MutableCounterLong numVolumeCreates;
-  private @Metric MutableCounterLong numVolumeUpdates;
-  private @Metric MutableCounterLong numVolumeInfos;
+  @Metric
+  @ExtendedMetricTag(priority = MetricPriority.INFO, numerator = "volume create ops")
+  private MutableCounterLong numVolumeCreates;
+
+  @Metric
+  @ExtendedMetricTag(priority = MetricPriority.DEBUG, numerator = "volume update ops")
+  private MutableCounterLong numVolumeUpdates;
+
+  @Metric
+  @ExtendedMetricTag(priority = MetricPriority.INFO, numerator = "volume info ops")
+  private MutableCounterLong numVolumeInfos;
+
   private @Metric MutableCounterLong numVolumeCheckAccesses;
   private @Metric MutableCounterLong numBucketCreates;
   private @Metric MutableCounterLong numFSOBucketCreates;
@@ -76,8 +87,11 @@ public class OMMetrics implements OmMetadataReaderMetrics {
   private @Metric MutableCounterLong numSnapshotPurges;
   private @Metric MutableCounterLong numSnapshotSetProperties;
 
-  private @Metric MutableGaugeInt numSnapshotCacheSize;
-  private @Metric MutableCounterLong numGetFileStatus;
+  @Metric
+  @ExtendedMetricTag(priority = MetricPriority.INFO)
+  private MutableGaugeInt numSnapshotCacheSize;
+
+  private @Metric @ExtendedMetricTag(priority = MetricPriority.INFO) MutableCounterLong numGetFileStatus;
   private @Metric MutableCounterLong numCreateDirectory;
   private @Metric MutableCounterLong numCreateFile;
   private @Metric MutableCounterLong numLookupFile;

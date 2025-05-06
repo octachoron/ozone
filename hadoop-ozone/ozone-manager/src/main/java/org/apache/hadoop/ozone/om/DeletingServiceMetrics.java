@@ -18,6 +18,8 @@
 package org.apache.hadoop.ozone.om;
 
 import com.google.common.annotations.VisibleForTesting;
+import org.apache.hadoop.hdds.annotation.ExtendedMetricTag;
+import org.apache.hadoop.hdds.utils.MetricPriority;
 import org.apache.hadoop.metrics2.annotation.Metric;
 import org.apache.hadoop.metrics2.annotation.Metrics;
 import org.apache.hadoop.metrics2.lib.DefaultMetricsSystem;
@@ -39,6 +41,7 @@ public final class DeletingServiceMetrics {
    * Total directory deletion metrics across all iterations of DirectoryDeletingService since last restart.
    */
   @Metric("Total no. of deleted directories sent for purge")
+  @ExtendedMetricTag(priority = MetricPriority.INFO)
   private MutableGaugeLong numDirsSentForPurge;
   @Metric("Total no. of sub-directories sent for purge")
   private MutableGaugeLong numSubDirsSentForPurge;

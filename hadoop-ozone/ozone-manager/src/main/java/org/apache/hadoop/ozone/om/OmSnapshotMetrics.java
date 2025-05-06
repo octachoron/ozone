@@ -18,7 +18,9 @@
 package org.apache.hadoop.ozone.om;
 
 import java.util.function.Supplier;
+import org.apache.hadoop.hdds.annotation.ExtendedMetricTag;
 import org.apache.hadoop.hdds.annotation.InterfaceAudience;
+import org.apache.hadoop.hdds.utils.MetricPriority;
 import org.apache.hadoop.metrics2.MetricsSystem;
 import org.apache.hadoop.metrics2.annotation.Metric;
 import org.apache.hadoop.metrics2.annotation.Metrics;
@@ -43,7 +45,10 @@ public final class OmSnapshotMetrics implements OmMetadataReaderMetrics {
             new OmSnapshotMetrics());
       });
 
-  private @Metric MutableCounterLong numKeyLookup;
+  @Metric
+  @ExtendedMetricTag(priority = MetricPriority.DEBUG, numerator = "key lookup ops")
+  private MutableCounterLong numKeyLookup;
+
   private @Metric MutableCounterLong numKeyLookupFails;
   private @Metric MutableCounterLong numGetKeyInfo;
   private @Metric MutableCounterLong numGetKeyInfoFails;
