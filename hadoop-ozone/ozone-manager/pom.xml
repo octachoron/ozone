@@ -483,10 +483,12 @@
             <classpath />
             <argument>org.apache.hadoop.hdds.metrics.MetricScanner</argument>
             <argument>OzoneManager</argument>
+            <argument>org.apache.hadoop.ozone.om</argument>
           </arguments>
           <classpathScope>test</classpathScope>
           <executable>java</executable>
           <workingDirectory>${project.build.outputDirectory}</workingDirectory>
+          <includePluginDependencies>true</includePluginDependencies>
         </configuration>
         <dependencies>
           <dependency>

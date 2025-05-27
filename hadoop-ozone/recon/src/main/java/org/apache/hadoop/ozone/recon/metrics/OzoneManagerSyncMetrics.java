@@ -17,7 +17,9 @@
 
 package org.apache.hadoop.ozone.recon.metrics;
 
+import org.apache.hadoop.hdds.annotation.ExtendedMetricTag;
 import org.apache.hadoop.hdds.annotation.InterfaceAudience;
+import org.apache.hadoop.hdds.utils.MetricPriority;
 import org.apache.hadoop.metrics2.MetricsSystem;
 import org.apache.hadoop.metrics2.annotation.Metric;
 import org.apache.hadoop.metrics2.annotation.Metrics;
@@ -39,6 +41,7 @@ public final class OzoneManagerSyncMetrics {
       OzoneManagerSyncMetrics.class.getSimpleName();
 
   @Metric(about = "Number of OM snapshot requests made by Recon.")
+  @ExtendedMetricTag(priority = MetricPriority.INFO)
   private MutableCounterLong numSnapshotRequests;
 
   @Metric(about = "Number of OM snapshot requests that failed.")

@@ -23,6 +23,7 @@
   <name>Apache Ozone Recon</name>
   <properties>
     <classpath.skip>false</classpath.skip>
+    <metric.schema.skip>false</metric.schema.skip>
     <pnpm.version>8.15.7</pnpm.version>
   </properties>
   <dependencies>
@@ -349,21 +350,48 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>exec-maven-plugin</artifactId>
-        <configuration>
-          <executable>java</executable>
-          <classpathScope>compile</classpathScope>
-          <mainClass>org.apache.ozone.recon.codegen.JooqCodeGenerator</mainClass>
-          <cleanupDaemonThreads>false</cleanupDaemonThreads>
-          <arguments>
-            <argument>${project.build.directory}/generated-sources/java</argument>
-          </arguments>
-        </configuration>
+        <dependencies>
+          <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-common</artifactId>
+            <version>${hadoop.version}</version>
+          </dependency>
+        </dependencies>
         <executions>
           <execution>
             <goals>
               <goal>java</goal>
             </goals>
             <phase>generate-resources</phase>
+            <configuration>
+              <classpathScope>compile</classpathScope>
+              <mainClass>org.apache.ozone.recon.codegen.JooqCodeGenerator</mainClass>
+              <cleanupDaemonThreads>false</cleanupDaemonThreads>
+              <arguments>
+                <argument>${project.build.directory}/generated-sources/java</argument>
+              </arguments>
+            </configuration>
+          </execution>
+          <execution>
+            <id>scan-metrics</id>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+            <phase>process-classes</phase>
+            <configuration>
+              <skip>${metric.schema.skip}</skip>
+              <arguments>
+                <argument>-classpath</argument>
+                <classpath />
+                <argument>org.apache.hadoop.hdds.metrics.MetricScanner</argument>
+                <argument>Recon</argument>
+                <argument>org.apache.hadoop.ozone.recon</argument>
+              </arguments>
+              <classpathScope>test</classpathScope>
+              <executable>java</executable>
+              <workingDirectory>${project.build.outputDirectory}</workingDirectory>
+              <includePluginDependencies>true</includePluginDependencies>
+            </configuration>
           </execution>
         </executions>
       </plugin>

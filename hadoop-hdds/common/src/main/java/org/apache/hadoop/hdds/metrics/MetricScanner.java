@@ -9,9 +9,11 @@ import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hdds.annotation.ExtendedMetricTag;
 import org.apache.hadoop.metrics2.annotation.Metric;
@@ -20,6 +22,7 @@ import org.apache.hadoop.metrics2.lib.MutableCounter;
 import org.apache.hadoop.metrics2.lib.MutableGauge;
 import org.reflections.Reflections;
 import org.reflections.scanners.Scanners;
+import org.reflections.util.ConfigurationBuilder;
 
 public class MetricScanner {
 
@@ -31,13 +34,14 @@ public class MetricScanner {
 
   private static String serviceName;
 
-  private static void scan(OutputStream outputStream) throws IOException {
+  private static void scan(OutputStream outputStream, String[] packages) throws IOException {
     ObjectMapper mapper = new ObjectMapper();
     ObjectWriter writer = mapper.writerWithDefaultPrettyPrinter();
 
     Reflections reflections = new Reflections(
-        "org.apache.hadoop.ozone",  //TODO: for now (will be a superset)
-        Scanners.FieldsAnnotated);
+        new ConfigurationBuilder()
+            .forPackages(packages)
+            .setScanners(Scanners.FieldsAnnotated));
 
     List<SchemaMetric> metricInfos = new ArrayList<>();
 
@@ -123,16 +127,24 @@ public class MetricScanner {
     return Files.newOutputStream(Paths.get(DEFAULT_OUTPUT_FILE));
   }
 
+  private static void usage() {
+    System.err.printf(
+        "Usage: java -cp {classpath} %s {service name}%n [package...]",
+        MetricScanner.class.getName());
+    System.exit(1);
+  }
+
   public static void main(String[] args) throws IOException {
     try {
       serviceName = args[0];
     } catch(ArrayIndexOutOfBoundsException e) {
-      System.err.printf("Usage: java -cp {classpath} %s {service name}%n", MetricScanner.class.getName());
-      System.exit(1);
+      usage();
     }
 
+    String[] packages = Arrays.copyOfRange(args, 1, args.length);
+
     try (OutputStream outputStream = openOutput()) {
-      scan(outputStream);
+      scan(outputStream, packages);
     }
   }
 }

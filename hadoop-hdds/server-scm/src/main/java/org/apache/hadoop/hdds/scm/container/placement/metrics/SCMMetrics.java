@@ -17,7 +17,9 @@
 
 package org.apache.hadoop.hdds.scm.container.placement.metrics;
 
+import org.apache.hadoop.hdds.annotation.ExtendedMetricTag;
 import org.apache.hadoop.hdds.utils.DBCheckpointMetrics;
+import org.apache.hadoop.hdds.utils.MetricPriority;
 import org.apache.hadoop.metrics2.MetricsSystem;
 import org.apache.hadoop.metrics2.annotation.Metric;
 import org.apache.hadoop.metrics2.annotation.Metrics;
@@ -37,7 +39,10 @@ public class SCMMetrics {
    * Container stat metrics, the meaning of following metrics
    * can be found in {@link ContainerStat}.
    */
-  @Metric private MutableGaugeLong lastContainerReportSize;
+  @Metric
+  @ExtendedMetricTag(priority = MetricPriority.INFO, numerator = "bytes")
+  private MutableGaugeLong lastContainerReportSize;
+
   @Metric private MutableGaugeLong lastContainerReportUsed;
   @Metric private MutableGaugeLong lastContainerReportKeyCount;
   @Metric private MutableGaugeLong lastContainerReportReadBytes;
