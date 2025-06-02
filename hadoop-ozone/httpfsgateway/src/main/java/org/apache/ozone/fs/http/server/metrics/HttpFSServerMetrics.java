@@ -22,7 +22,9 @@ import static org.apache.hadoop.metrics2.impl.MsInfo.SessionId;
 
 import java.util.concurrent.ThreadLocalRandom;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hdds.annotation.ExtendedMetricTag;
 import org.apache.hadoop.hdds.annotation.InterfaceAudience;
+import org.apache.hadoop.hdds.utils.MetricPriority;
 import org.apache.hadoop.metrics2.MetricsSystem;
 import org.apache.hadoop.metrics2.annotation.Metric;
 import org.apache.hadoop.metrics2.annotation.Metrics;
@@ -47,7 +49,10 @@ import org.apache.hadoop.metrics2.source.JvmMetrics;
 @Metrics(about = "HttpFSServer metrics", context = "httpfs")
 public class HttpFSServerMetrics {
 
-  private @Metric MutableCounterLong bytesWritten;
+  @Metric
+  @ExtendedMetricTag(priority = MetricPriority.INFO)
+  private MutableCounterLong bytesWritten;
+
   private @Metric MutableCounterLong bytesRead;
 
   // Write ops

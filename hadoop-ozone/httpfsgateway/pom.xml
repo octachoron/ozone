@@ -34,6 +34,7 @@
     <httpfs.source.repository>REPO NOT AVAIL</httpfs.source.repository>
     <httpfs.source.revision>REVISION NOT AVAIL</httpfs.source.revision>
     <maven.build.timestamp.format>yyyy-MM-dd'T'HH:mm:ssZ</maven.build.timestamp.format>
+    <metric.schema.skip>false</metric.schema.skip>
   </properties>
 
   <dependencies>
@@ -208,6 +209,40 @@
     </testResources>
 
     <plugins>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <dependencies>
+          <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-common</artifactId>
+            <version>${hadoop.version}</version>
+          </dependency>
+        </dependencies>
+        <executions>
+          <execution>
+            <id>scan-metrics</id>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+            <phase>process-classes</phase>
+            <configuration>
+              <skip>${metric.schema.skip}</skip>
+              <arguments>
+                <argument>-classpath</argument>
+                <classpath />
+                <argument>org.apache.hadoop.hdds.metrics.MetricScanner</argument>
+                <argument>HttpFSServer</argument>
+                <argument>org.apache.ozone.fs.http.server</argument>
+              </arguments>
+              <classpathScope>test</classpathScope>
+              <executable>java</executable>
+              <workingDirectory>${project.build.outputDirectory}</workingDirectory>
+              <includePluginDependencies>true</includePluginDependencies>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-checkstyle-plugin</artifactId>

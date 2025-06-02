@@ -476,20 +476,6 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>exec-maven-plugin</artifactId>
-        <configuration>
-          <skip>${metric.schema.skip}</skip>
-          <arguments>
-            <argument>-classpath</argument>
-            <classpath />
-            <argument>org.apache.hadoop.hdds.metrics.MetricScanner</argument>
-            <argument>OzoneManager</argument>
-            <argument>org.apache.hadoop.ozone.om</argument>
-          </arguments>
-          <classpathScope>test</classpathScope>
-          <executable>java</executable>
-          <workingDirectory>${project.build.outputDirectory}</workingDirectory>
-          <includePluginDependencies>true</includePluginDependencies>
-        </configuration>
         <dependencies>
           <dependency>
             <groupId>org.apache.hadoop</groupId>
@@ -499,10 +485,25 @@
         </dependencies>
         <executions>
           <execution>
+            <id>scan-metrics</id>
             <goals>
               <goal>exec</goal>
             </goals>
             <phase>process-classes</phase>
+            <configuration>
+              <skip>${metric.schema.skip}</skip>
+              <arguments>
+                <argument>-classpath</argument>
+                <classpath />
+                <argument>org.apache.hadoop.hdds.metrics.MetricScanner</argument>
+                <argument>OzoneManager</argument>
+                <argument>org.apache.hadoop.ozone.om</argument>
+              </arguments>
+              <classpathScope>test</classpathScope>
+              <executable>java</executable>
+              <workingDirectory>${project.build.outputDirectory}</workingDirectory>
+              <includePluginDependencies>true</includePluginDependencies>
+            </configuration>
           </execution>
         </executions>
       </plugin>

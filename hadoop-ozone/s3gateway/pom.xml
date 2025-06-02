@@ -27,6 +27,7 @@
     <classpath.skip>false</classpath.skip>
     <downloadSources>true</downloadSources>
     <file.encoding>UTF-8</file.encoding>
+    <metric.schema.skip>false</metric.schema.skip>
   </properties>
 
   <dependencies>
@@ -240,6 +241,40 @@
   </dependencies>
   <build>
     <plugins>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <dependencies>
+          <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-common</artifactId>
+            <version>${hadoop.version}</version>
+          </dependency>
+        </dependencies>
+        <executions>
+          <execution>
+            <id>scan-metrics</id>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+            <phase>process-classes</phase>
+            <configuration>
+              <skip>${metric.schema.skip}</skip>
+              <arguments>
+                <argument>-classpath</argument>
+                <classpath />
+                <argument>org.apache.hadoop.hdds.metrics.MetricScanner</argument>
+                <argument>S3Gateway</argument>
+                <argument>org.apache.hadoop.ozone.s3</argument>
+              </arguments>
+              <classpathScope>test</classpathScope>
+              <executable>java</executable>
+              <workingDirectory>${project.build.outputDirectory}</workingDirectory>
+              <includePluginDependencies>true</includePluginDependencies>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>

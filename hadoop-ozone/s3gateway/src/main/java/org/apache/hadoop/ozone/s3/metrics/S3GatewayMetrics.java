@@ -19,9 +19,11 @@ package org.apache.hadoop.ozone.s3.metrics;
 
 import java.io.Closeable;
 import java.util.Map;
+import org.apache.hadoop.hdds.annotation.ExtendedMetricTag;
 import org.apache.hadoop.hdds.annotation.InterfaceAudience;
 import org.apache.hadoop.hdds.conf.OzoneConfiguration;
 import org.apache.hadoop.hdds.utils.IOUtils;
+import org.apache.hadoop.hdds.utils.MetricPriority;
 import org.apache.hadoop.metrics2.MetricsCollector;
 import org.apache.hadoop.metrics2.MetricsRecordBuilder;
 import org.apache.hadoop.metrics2.MetricsSource;
@@ -50,7 +52,9 @@ public final class S3GatewayMetrics implements Closeable, MetricsSource {
   private static S3GatewayMetrics instance;
 
   // BucketEndpoint
-  private @Metric MutableCounterLong getBucketSuccess;
+  @Metric
+  @ExtendedMetricTag(priority = MetricPriority.INFO)
+  private MutableCounterLong getBucketSuccess;
   private @Metric MutableCounterLong getBucketFailure;
   private @Metric MutableCounterLong createBucketSuccess;
   private @Metric MutableCounterLong createBucketFailure;
