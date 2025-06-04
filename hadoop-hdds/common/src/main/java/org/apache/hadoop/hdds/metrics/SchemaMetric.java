@@ -20,6 +20,11 @@ package org.apache.hadoop.hdds.metrics;
 import org.apache.hadoop.hdds.utils.MetricPriority;
 import org.apache.hadoop.metrics2.annotation.Metric;
 
+/**
+ * Representation of a generated static metric definition.
+ *
+ * @see org.apache.hadoop.hdds.metrics.MetricScanner
+ */
 public class SchemaMetric {
   private final String bean;
   private final String className;

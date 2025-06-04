@@ -30,7 +30,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hdds.annotation.ExtendedMetricTag;
 import org.apache.hadoop.metrics2.annotation.Metric;
@@ -41,6 +40,12 @@ import org.reflections.Reflections;
 import org.reflections.scanners.Scanners;
 import org.reflections.util.ConfigurationBuilder;
 
+/**
+ * Executable tool that scans the classpath for
+ * {@link org.apache.hadoop.hdds.annotation.ExtendedMetricTag ExtendedMetricTag}
+ * annotations, and outputs a summary of the metrics they belong to. The output
+ * is intended to be used for generating further artifacts, e.g. Grafana dashboards.
+ */
 public class MetricScanner {
 
   private static final String DEFAULT_OUTPUT_FILE = "gen-metrics.txt";
@@ -49,9 +54,15 @@ public class MetricScanner {
       MutableCounter.class, Metric.Type.COUNTER,
       MutableGauge.class, Metric.Type.GAUGE);
 
-  private static String serviceName;
+  private final String serviceName;
+  private final String[] packages;
 
-  private static void scan(OutputStream outputStream, String[] packages) throws IOException {
+  public MetricScanner(String serviceName, String[] packages) {
+    this.serviceName = serviceName;
+    this.packages = packages;
+  }
+
+  private void scan(OutputStream outputStream) throws IOException {
     ObjectMapper mapper = new ObjectMapper();
     ObjectWriter writer = mapper.writerWithDefaultPrettyPrinter();
 
@@ -70,7 +81,7 @@ public class MetricScanner {
     writer.writeValue(outputStream, metricInfos);
   }
 
-  private static Metric.Type getMetricType(Field field) {
+  private Metric.Type getMetricType(Field field) {
     Class<?> fieldType = field.getType();
 
     for (Map.Entry<Class<?>, Metric.Type> entry : METRIC_TYPES.entrySet()) {
@@ -83,7 +94,7 @@ public class MetricScanner {
     return Metric.Type.DEFAULT;
   }
 
-  private static String getNumerator(ExtendedMetricTag annotation, Field field) {
+  private String getNumerator(ExtendedMetricTag annotation, Field field) {
     Metric.Type type = getMetricType(field);
 
     String numerator = annotation.numerator();
@@ -94,7 +105,7 @@ public class MetricScanner {
     return numerator;
   }
 
-  private static String getDescription(Field metricField) {
+  private String getDescription(Field metricField) {
     Metric metricAnnotation = metricField.getAnnotation(Metric.class);
 
     if (StringUtils.isNotBlank(metricAnnotation.about())) {
@@ -115,7 +126,7 @@ public class MetricScanner {
         metricField.getName());
   }
 
-  private static SchemaMetric buildSchemaMetric(Field field) {
+  private SchemaMetric buildSchemaMetric(Field field) {
     ExtendedMetricTag annotation = field.getAnnotation(ExtendedMetricTag.class);
     assert annotation != null; //FIXME
     Class<?> metricsClass = field.getDeclaringClass();
@@ -139,28 +150,39 @@ public class MetricScanner {
     return schemaMetric;
   }
 
-  private static OutputStream openOutput() throws IOException {
+  private OutputStream openOutput() throws IOException {
     return Files.newOutputStream(Paths.get(DEFAULT_OUTPUT_FILE));
+  }
+
+  public void run() throws IOException {
+    try (OutputStream outputStream = openOutput()) {
+      scan(outputStream);
+    }
   }
 
   private static void usage() {
     System.err.printf(
-        "Usage: java -cp {classpath} %s {service name}%n [package...]",
+        "Usage: java -cp {classpath} %s {service name}%n package [package...]",
         MetricScanner.class.getName());
     System.exit(1);
   }
 
   public static void main(String[] args) throws IOException {
+    String serviceName = null;
+
+    if (args.length < 2) {
+      // Service name and at least one package are required.
+      usage();
+    }
+
     try {
       serviceName = args[0];
-    } catch(ArrayIndexOutOfBoundsException e) {
+    } catch (ArrayIndexOutOfBoundsException e) {
       usage();
     }
 
     String[] packages = Arrays.copyOfRange(args, 1, args.length);
 
-    try (OutputStream outputStream = openOutput()) {
-      scan(outputStream, packages);
-    }
+    new MetricScanner(serviceName, packages).run();
   }
 }

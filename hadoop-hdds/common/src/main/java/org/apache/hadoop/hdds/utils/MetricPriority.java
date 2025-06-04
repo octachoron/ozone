@@ -17,6 +17,10 @@
 
 package org.apache.hadoop.hdds.utils;
 
+/**
+ * Importance of a particular metric for the purposes of general operational
+ * monitoring.
+ */
 public enum MetricPriority {
   INFO,
   DEBUG,
