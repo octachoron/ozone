@@ -32,6 +32,7 @@ import java.util.Map;
 import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hdds.annotation.ExtendedMetricTag;
+import org.apache.hadoop.hdds.utils.Component;
 import org.apache.hadoop.metrics2.annotation.Metric;
 import org.apache.hadoop.metrics2.annotation.Metrics;
 import org.apache.hadoop.metrics2.lib.MutableCounter;
@@ -54,12 +55,23 @@ public class MetricScanner {
       MutableCounter.class, Metric.Type.COUNTER,
       MutableGauge.class, Metric.Type.GAUGE);
 
-  private final String serviceName;
+  private String serviceName;
   private final String[] packages;
 
-  public MetricScanner(String serviceName, String[] packages) {
-    this.serviceName = serviceName;
-    this.packages = packages;
+  public MetricScanner(String[] args) {
+
+    if (args.length < 2) {
+      // Service name and at least one package are required.
+      usage();
+    }
+
+    try {
+      serviceName = args[0];
+    } catch (ArrayIndexOutOfBoundsException e) {
+      usage();
+    }
+
+    this.packages = Arrays.copyOfRange(args, 1, args.length);
   }
 
   private void scan(OutputStream outputStream) throws IOException {
@@ -75,7 +87,10 @@ public class MetricScanner {
 
     Set<Field> metrics = reflections.getFieldsAnnotatedWith(ExtendedMetricTag.class);
     for (Field field : metrics) {
-      metricInfos.add(buildSchemaMetric(field));
+      SchemaMetric schemaMetric = buildSchemaMetric(field);
+      if (schemaMetric != null) {
+        metricInfos.add(buildSchemaMetric(field));
+      }
     }
 
     writer.writeValue(outputStream, metricInfos);
@@ -129,6 +144,14 @@ public class MetricScanner {
   private SchemaMetric buildSchemaMetric(Field field) {
     ExtendedMetricTag annotation = field.getAnnotation(ExtendedMetricTag.class);
     assert annotation != null; //FIXME
+
+    String jmxService = annotation.component().getJmxService();
+    if (jmxService != null && !jmxService.equals(serviceName)) {
+      // On shared classpath, but specific to a different component.
+      // Ideally, this should not happen, but it does.
+      return null;
+    }
+
     Class<?> metricsClass = field.getDeclaringClass();
     Metrics metricsAnnotation = metricsClass.getAnnotation(Metrics.class);
     assert metricsAnnotation != null; //FIXME
@@ -161,28 +184,13 @@ public class MetricScanner {
   }
 
   private static void usage() {
-    System.err.printf(
-        "Usage: java -cp {classpath} %s {service name}%n package [package...]",
+    String usageText = String.format(
+        "Usage: java -cp {classpath} %s {service name} package [package...]",
         MetricScanner.class.getName());
-    System.exit(1);
+    throw new IllegalArgumentException(usageText);
   }
 
   public static void main(String[] args) throws IOException {
-    String serviceName = null;
-
-    if (args.length < 2) {
-      // Service name and at least one package are required.
-      usage();
-    }
-
-    try {
-      serviceName = args[0];
-    } catch (ArrayIndexOutOfBoundsException e) {
-      usage();
-    }
-
-    String[] packages = Arrays.copyOfRange(args, 1, args.length);
-
-    new MetricScanner(serviceName, packages).run();
+    new MetricScanner(args).run();
   }
 }

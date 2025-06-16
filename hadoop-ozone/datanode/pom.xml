@@ -28,6 +28,7 @@
     <classpath.skip>false</classpath.skip>
     <!-- no tests in this module so far -->
     <maven.test.skip>true</maven.test.skip>
+    <metric.schema.skip>false</metric.schema.skip>
     <spotbugs.skip>true</spotbugs.skip>
   </properties>
 
@@ -93,6 +94,40 @@
         <configuration>
           <skip>true</skip>
         </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <dependencies>
+          <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-common</artifactId>
+            <version>${hadoop.version}</version>
+          </dependency>
+        </dependencies>
+        <executions>
+          <execution>
+            <id>scan-metrics</id>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+            <phase>process-classes</phase>
+            <configuration>
+              <skip>${metric.schema.skip}</skip>
+              <arguments>
+                <argument>-classpath</argument>
+                <classpath />
+                <argument>org.apache.hadoop.hdds.metrics.MetricScanner</argument>
+                <argument>HddsDatanode</argument>
+                <argument>org.apache.hadoop.ozone</argument>
+              </arguments>
+              <classpathScope>test</classpathScope>
+              <executable>java</executable>
+              <workingDirectory>${project.build.outputDirectory}</workingDirectory>
+              <includePluginDependencies>true</includePluginDependencies>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>

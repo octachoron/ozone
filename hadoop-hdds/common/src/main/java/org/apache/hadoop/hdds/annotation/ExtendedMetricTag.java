@@ -21,6 +21,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import org.apache.hadoop.hdds.utils.Component;
 import org.apache.hadoop.hdds.utils.MetricPriority;
 
 /**
@@ -33,4 +34,5 @@ import org.apache.hadoop.hdds.utils.MetricPriority;
 public @interface ExtendedMetricTag {
   MetricPriority priority();
   String numerator() default "";
+  Component component() default Component.AUTO;
 }

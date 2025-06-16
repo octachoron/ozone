@@ -17,7 +17,10 @@
 
 package org.apache.hadoop.ozone.container.ec.reconstruction;
 
+import org.apache.hadoop.hdds.annotation.ExtendedMetricTag;
 import org.apache.hadoop.hdds.annotation.InterfaceAudience;
+import org.apache.hadoop.hdds.utils.Component;
+import org.apache.hadoop.hdds.utils.MetricPriority;
 import org.apache.hadoop.metrics2.MetricsSystem;
 import org.apache.hadoop.metrics2.annotation.Metric;
 import org.apache.hadoop.metrics2.annotation.Metrics;
@@ -35,9 +38,19 @@ public final class ECReconstructionMetrics {
   private static final String SOURCE =
       ECReconstructionMetrics.class.getSimpleName();
 
-  private @Metric MutableCounterLong blockGroupReconstructionTotal;
-  private @Metric MutableCounterLong blockGroupReconstructionFailsTotal;
-  private @Metric MutableCounterLong reconstructionTotal;
+  @Metric
+  @ExtendedMetricTag(priority = MetricPriority.INFO)
+  private MutableCounterLong blockGroupReconstructionTotal;
+
+  @Metric
+  @ExtendedMetricTag(priority = MetricPriority.INFO, component = Component.DATANODE)
+  private MutableCounterLong blockGroupReconstructionFailsTotal;
+
+  // XXX: Not really an SCM metric, just wanted to add an example.
+  @Metric
+  @ExtendedMetricTag(priority = MetricPriority.INFO, component = Component.SCM)
+  private MutableCounterLong reconstructionTotal;
+
   private @Metric MutableCounterLong reconstructionFailsTotal;
 
   private ECReconstructionMetrics() {
