@@ -150,6 +150,43 @@ public final class OmAddressOptions {
     }
   }
 
+  protected static class OmServiceIdOptions {
+    @CommandLine.Option(
+        names = {"--om-service-id"},
+        description = "Ozone Manager Service ID."
+    )
+    private String serviceID;
+
+    public String getServiceID() {
+      return serviceID;
+    }
+
+    @Override
+    public String toString() {
+      String serviceIdValue = getServiceID();
+
+      if (serviceIdValue == null || serviceIdValue.isEmpty()) {
+        return "";
+      } else {
+        return "--om-service-id " + serviceIdValue;
+      }
+    }
+  }
+
+  public static class OptionalOmServiceIdMixin extends AbstractMixin {
+    @CommandLine.ArgGroup // exclusive=true, multiplicity=0..1
+    private OmServiceIdOptions opts;
+
+    public OzoneManagerProtocol newClient() throws IOException {
+      return createOmClient(
+          getOzoneConf(),
+          rootCommand().getUser(),
+          opts == null ? null : opts.getServiceID(),
+          null,
+          false);
+    }
+  }
+
   /** Add options for OM host. */
   protected static class ServiceIdAndHostOptions extends ServiceIdOptions {
     @CommandLine.Option(

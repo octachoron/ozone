@@ -22,6 +22,8 @@ import org.apache.hadoop.hdds.cli.HddsVersionProvider;
 import org.apache.hadoop.hdds.protocol.proto.HddsProtos;
 import org.apache.hadoop.hdds.scm.cli.ScmSubcommand;
 import org.apache.hadoop.hdds.scm.client.ScmClient;
+import org.apache.hadoop.ozone.admin.om.OmAddressOptions;
+import org.apache.hadoop.ozone.om.protocol.OzoneManagerProtocol;
 import picocli.CommandLine;
 
 /**
@@ -34,6 +36,13 @@ import picocli.CommandLine;
     mixinStandardHelpOptions = true,
     versionProvider = HddsVersionProvider.class)
 public class StatusSubCommand extends ScmSubcommand {
+
+  @CommandLine.Mixin
+  protected OmAddressOptions.OptionalOmServiceIdMixin omAddressOptions;
+
+  protected OzoneManagerProtocol newOmClient() throws IOException {
+    return omAddressOptions.newClient();
+  }
 
   @Override
   public void execute(ScmClient client) throws IOException {

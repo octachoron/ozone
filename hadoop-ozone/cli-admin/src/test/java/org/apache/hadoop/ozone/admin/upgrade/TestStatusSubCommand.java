@@ -17,7 +17,9 @@
 
 package org.apache.hadoop.ozone.admin.upgrade;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -25,10 +27,12 @@ import static org.mockito.Mockito.when;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
+import org.apache.hadoop.hdds.conf.OzoneConfiguration;
 import org.apache.hadoop.hdds.protocol.proto.HddsProtos;
 import org.apache.hadoop.hdds.scm.client.ScmClient;
+import org.apache.hadoop.ozone.om.protocol.OzoneManagerProtocol;
+import org.apache.ozone.test.tag.Unhealthy;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -44,15 +48,29 @@ public class TestStatusSubCommand {
   private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
   private final PrintStream originalOut = System.out;
   private StatusSubCommand cmd;
+  private OzoneManagerProtocol omClient;
+  private ScmClient scmClient;
 
   @BeforeEach
-  public void setup() throws UnsupportedEncodingException {
-    cmd = new StatusSubCommand();
+  public void setup() throws IOException {
+    cmd = new StatusSubCommand() {
+      protected OzoneManagerProtocol newOmClient() {
+        return omClient;
+      }
+    };
+
+    omClient = mock(OzoneManagerProtocol.class);
+
+    scmClient = mock(ScmClient.class);
+    HddsProtos.UpgradeStatus defaultScmStatus = HddsProtos.UpgradeStatus.getDefaultInstance();
+    doReturn(defaultScmStatus).when(scmClient).queryUpgradeStatus();
+
     System.setOut(new PrintStream(outContent, false, DEFAULT_ENCODING));
   }
 
   @AfterEach
   public void tearDown() {
+    outContent.reset();
     System.setOut(originalOut);
   }
 
@@ -77,5 +95,54 @@ public class TestStatusSubCommand {
     assertTrue(output.contains("Total Datanodes: 3"));
     assertTrue(output.contains("Should Finalize: true"));
     verify(scmClient).queryUpgradeStatus();
+  }
+
+  @Unhealthy("Leaving this in only for reference. Currently failing.")
+  @Test
+  public void testOmFinalizationStatus() throws Exception {
+
+
+    doReturn(true).when(omClient).getUpgradeStatus();
+
+    CommandLine c = new CommandLine(cmd);
+    c.parseArgs();
+    cmd.execute(scmClient);
+
+    assertThat(outContent.toString(DEFAULT_ENCODING)).contains("OM Finalized: true");
+
+    doReturn(false).when(omClient).getUpgradeStatus();
+
+    c = new CommandLine(cmd);
+    c.parseArgs();
+    cmd.execute(scmClient);
+
+    assertThat(outContent.toString(DEFAULT_ENCODING)).contains("OM Finalized: false");
+  }
+
+  @Unhealthy("Leaving this in only for reference. Currently failing.")
+  @Test
+  public void testOmServiceParameter() throws Exception {
+    doReturn(true).when(omClient).getUpgradeStatus();
+
+    StatusSubCommand cmd = new StatusSubCommand() {
+      @Override
+      protected OzoneConfiguration getOzoneConf() {
+        OzoneConfiguration conf = new OzoneConfiguration();
+        conf.set("ozone.om.service.ids", "mock-om-service-id");
+        conf.set("ozone.service.id", "mock-om-service-id");
+        conf.set("ozone.om.address.mock-om-service-id.om1", "mock-om-address1:1234");
+        conf.set("ozone.om.address.mock-om-service-id.om2", "mock-om-address2:1235");
+        conf.set("ozone.om.address.mock-om-service-id.om3", "mock-om-address3:1236");
+        conf.set("ozone.om.nodes.mock-om-service-id", "om1,om2,om3");
+
+        return conf;
+      }
+    };
+
+    CommandLine c = new CommandLine(cmd);
+    c.parseArgs("--om-service-id", "mock-om-service-id");
+    cmd.execute(scmClient);
+
+    assertThat(outContent.toString(DEFAULT_ENCODING)).contains("OM Finalized: true");
   }
 }

@@ -539,6 +539,13 @@ public interface OzoneManagerProtocol
       String upgradeClientID, boolean takeover, boolean readonly
   ) throws IOException;
 
+  /**
+   * Returns the finalization status.
+   * @return true if finalized, false otherwise.
+   * @throws IOException
+   */
+  boolean getUpgradeStatus() throws IOException;
+
   /*
    * S3 Specific functionality that is supported by Ozone Manager.
    */

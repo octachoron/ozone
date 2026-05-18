@@ -3659,6 +3659,11 @@ public final class OzoneManager extends ServiceRuntimeInfoImpl
     }
   }
 
+  @Override
+  public boolean getUpgradeStatus() {
+    return !versionManager.needsFinalization();
+  }
+
   /**
    * List tenants.
    */

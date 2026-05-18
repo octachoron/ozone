@@ -112,6 +112,8 @@ import org.apache.hadoop.ozone.protocol.proto.OzoneManagerProtocolProtos.GetFile
 import org.apache.hadoop.ozone.protocol.proto.OzoneManagerProtocolProtos.GetFileStatusResponse;
 import org.apache.hadoop.ozone.protocol.proto.OzoneManagerProtocolProtos.GetKeyInfoRequest;
 import org.apache.hadoop.ozone.protocol.proto.OzoneManagerProtocolProtos.GetKeyInfoResponse;
+import org.apache.hadoop.ozone.protocol.proto.OzoneManagerProtocolProtos.GetUpgradeStatusRequest;
+import org.apache.hadoop.ozone.protocol.proto.OzoneManagerProtocolProtos.GetUpgradeStatusResponse;
 import org.apache.hadoop.ozone.protocol.proto.OzoneManagerProtocolProtos.GetObjectTaggingRequest;
 import org.apache.hadoop.ozone.protocol.proto.OzoneManagerProtocolProtos.GetObjectTaggingResponse;
 import org.apache.hadoop.ozone.protocol.proto.OzoneManagerProtocolProtos.GetS3VolumeContextResponse;
@@ -298,6 +300,11 @@ public class OzoneManagerRequestHandler implements RequestHandler {
             reportUpgradeProgress(request.getFinalizeUpgradeProgressRequest());
         responseBuilder
             .setFinalizeUpgradeProgressResponse(upgradeProgressResponse);
+        break;
+      case GetUpgradeStatus:
+        GetUpgradeStatusResponse upgradeStatusResponse =
+            getUpgradeStatus(request.getGetUpgradeStatusRequest());
+        responseBuilder.setGetUpgradeStatusResponse(upgradeStatusResponse);
         break;
       case PrepareStatus:
         PrepareStatusResponse prepareStatusResponse = getPrepareStatus();
@@ -1375,6 +1382,14 @@ public class OzoneManagerRequestHandler implements RequestHandler {
 
     return FinalizeUpgradeProgressResponse.newBuilder()
         .setStatus(response)
+        .build();
+  }
+
+  private GetUpgradeStatusResponse getUpgradeStatus(
+      GetUpgradeStatusRequest request) throws IOException {
+    boolean status = impl.getUpgradeStatus();
+    return GetUpgradeStatusResponse.newBuilder()
+        .setUpgradeFinalized(status)
         .build();
   }
 
