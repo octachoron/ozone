@@ -593,7 +593,7 @@ public class SecurityConfig {
   }
 
   /**
-   * Returns TLS protocol versions for gRPC servers,
+   * Returns TLS protocol versions for gRPC servers and clients,
    * or null for provider defaults.
    */
   public String[] getGrpcTlsProtocols() {
@@ -601,7 +601,7 @@ public class SecurityConfig {
   }
 
   /**
-   * Returns TLS cipher suites for gRPC servers,
+   * Returns TLS cipher suites for gRPC servers and clients,
    * or null for provider defaults.
    */
   public List<String> getGrpcTlsCiphers() {

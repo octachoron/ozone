@@ -73,6 +73,7 @@ import org.apache.ratis.thirdparty.io.grpc.netty.NettyChannelBuilder;
 import org.apache.ratis.thirdparty.io.grpc.stub.ClientCallStreamObserver;
 import org.apache.ratis.thirdparty.io.grpc.stub.StreamObserver;
 import org.apache.ratis.thirdparty.io.netty.handler.ssl.SslContextBuilder;
+import org.apache.ratis.thirdparty.io.netty.handler.ssl.SupportedCipherSuiteFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -223,6 +224,12 @@ public class XceiverClientGrpc extends XceiverClientSpi {
       if (secConfig.useTestCert()) {
         channelBuilder.overrideAuthority("localhost");
       }
+
+      sslContextBuilder.protocols(secConfig.getGrpcTlsProtocols());
+      sslContextBuilder.ciphers(
+          secConfig.getGrpcTlsCiphers(),
+          SupportedCipherSuiteFilter.INSTANCE);
+
       channelBuilder.useTransportSecurity().
           sslContext(sslContextBuilder.build());
     } else {
